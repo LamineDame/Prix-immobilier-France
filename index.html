@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -10,13 +9,14 @@
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet" />
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="app-shell">
     <header id="page-header">
-      <h1 id="mainTitle">#Prix de l’immobilier en 2024</h1>
+      <h1 id="mainTitle">Géographie des prix immobiliers en France (2014–2024)</h1>
       <p id="subTitle">Ventes de tous les biens</p>
     </header>
 
@@ -72,79 +72,4 @@
 
   <script src="main.js"></script>
 </body>
-=======
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <title>DVF France</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet" />
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div id="app-shell">
-    <header id="page-header">
-      <h1 id="mainTitle">#Prix de l’immobilier en 2024</h1>
-      <p id="subTitle">Ventes de tous les biens</p>
-    </header>
-
-    <section id="dashboard">
-      <aside id="leftPanel">
-        <div class="card controls-card">
-          <h2>Filtres</h2>
-
-          <label for="yearSelect">Année</label>
-          <select id="yearSelect"></select>
-
-          <label for="typeSelect">Type de bien</label>
-          <select id="typeSelect">
-            <option value="Tous">Tous les biens</option>
-          </select>
-
-          <label for="varSelect">Indicateur cartographié</label>
-          <select id="varSelect">
-            <option value="prix_m2_moy">Prix moyen au m²</option>
-            <option value="prix_m2_med">Prix médian au m²</option>
-            <option value="valeur_med">Valeur médiane</option>
-          </select>
-        </div>
-
-        <div class="card legend-card">
-          <h3 id="legendTitle">Prix moyen au m² par commune</h3>
-          <div id="legendItems" class="legend-items"></div>
-          <p id="legendNote" class="legend-note">
-            Agrégation statistique à l’échelle communale.
-          </p>
-        </div>
-
-        <div class="card hist-card">
-          <h3 id="histTitle">Distribution</h3>
-          <div class="hist-wrap">
-            <canvas id="histogramChart"></canvas>
-          </div>
-        </div>
-
-        <div class="card info-card">
-          <h3>État</h3>
-          <p id="statusText">Initialisation…</p>
-        </div>
-      </aside>
-
-      <main id="mapPanel">
-        <div id="mapFrame">
-          <div id="map"></div>
-        </div>
-      </main>
-    </section>
-  </div>
-
-  <script src="main.js"></script>
-</body>
->>>>>>> 2c1a62433c1453af73f617377bc3d48c04d4ffa1
 </html>
