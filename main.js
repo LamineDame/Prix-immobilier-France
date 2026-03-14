@@ -6,8 +6,12 @@ const map = new mapboxgl.Map({
   center: [2.4, 46.4],
   zoom: 5.5,
   attributionControl: true,
-  customAttribution: "Cartographie : Mouhamadou Lamine GUEYE · Données DVF"
+  customAttribution: "Cartographie : Mouhamadou Lamine GUEYE · Données DVF",
+  antialias: false,
+  fadeDuration: 0,
+  renderWorldCopies: false
 });
+
 map.addControl(
   new mapboxgl.ScaleControl({ maxWidth: 120, unit: "metric" }),
   "bottom-left"
@@ -92,7 +96,7 @@ const CLASS_CONFIG = {
 };
 
 function buildYearFilePath(year) {
-  return `./data/DVF_${year}_light.geojson`;
+  return `./data/DVF_${year}_light.geojson.gz`;
 }
 
 function safeNumber(v) {
@@ -419,16 +423,22 @@ function initMapLayers() {
   mapReady = true;
 }
 
-function updateDashboard() {
-  if (!currentGeojson) return;
+function inflateGzipToText(arrayBuffer) {
+  const uint8 = new Uint8Array(arrayBuffer);
+  const inflated = pako.ungzip(uint8);
+  return new TextDecoder("utf-8").decode(inflated);
+}
 
-  const features = filterFeatures();
-  updateTitles();
-  updateLegend();
-  updateMap(features);
-  updateHistogram(features);
+async function fetchGeojsonGz(url) {
+  const response = await fetch(url);
 
-  statusText.textContent = `${features.length.toLocaleString("fr-FR")} entités affichées.`;
+  if (!response.ok) {
+    throw new Error(`Fichier introuvable : ${url}`);
+  }
+
+  const buffer = await response.arrayBuffer();
+  const text = inflateGzipToText(buffer);
+  return JSON.parse(text);
 }
 
 async function loadYearData(year) {
@@ -438,12 +448,7 @@ async function loadYearData(year) {
     if (yearCache.has(String(year))) {
       currentGeojson = yearCache.get(String(year));
     } else {
-      const response = await fetch(buildYearFilePath(year));
-      if (!response.ok) {
-        throw new Error(`Fichier introuvable : ${buildYearFilePath(year)}`);
-      }
-
-      const geojson = await response.json();
+      const geojson = await fetchGeojsonGz(buildYearFilePath(year));
 
       if (!geojson.features || !Array.isArray(geojson.features)) {
         throw new Error("GeoJSON invalide");
@@ -462,6 +467,18 @@ async function loadYearData(year) {
     statusText.textContent = `Erreur : ${error.message}`;
     alert(error.message);
   }
+}
+
+function updateDashboard() {
+  if (!currentGeojson) return;
+
+  const features = filterFeatures();
+  updateTitles();
+  updateLegend();
+  updateMap(features);
+  updateHistogram(features);
+
+  statusText.textContent = `${features.length.toLocaleString("fr-FR")} entités affichées.`;
 }
 
 yearSelect.addEventListener("change", () => {
