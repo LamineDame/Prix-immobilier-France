@@ -4,16 +4,10 @@ const map = new mapboxgl.Map({
   container: "map",
   style: "mapbox://styles/mapbox/light-v11",
   center: [2.4, 46.4],
-  zoom: 5.2,
-  pitch: 0,
-  bearing: 0,
+  zoom: 5.5,
   attributionControl: true,
-  customAttribution: "Cartographie : Mouhamadou Lamine GUEYE · Données DVF",
-  antialias: false,
-  fadeDuration: 0,
-  renderWorldCopies: false
+  customAttribution: "Cartographie : Mouhamadou Lamine GUEYE · Données DVF"
 });
-
 map.addControl(
   new mapboxgl.ScaleControl({ maxWidth: 120, unit: "metric" }),
   "bottom-left"
@@ -98,7 +92,7 @@ const CLASS_CONFIG = {
 };
 
 function buildYearFilePath(year) {
-  return `./data/DVF_${year}_light.geojson.gz`;
+  return `./data/DVF_${year}_light.geojson`;
 }
 
 function safeNumber(v) {
@@ -157,8 +151,17 @@ function getTypeLabel(typeValue) {
   return `Ventes de ${typeValue}`;
 }
 
+function getVariableTitle(variable) {
+  const labels = {
+    prix_m2_moy: "Prix de l’immobilier",
+    prix_m2_med: "Prix médian de l’immobilier",
+    valeur_med: "Valeur médiane des transactions"
+  };
+  return labels[variable] || "Analyse immobilière";
+}
+
 function updateTitles() {
-  mainTitle.textContent = "Géographie des prix immobiliers en France (2014–2024)";
+  mainTitle.textContent = `#${getVariableTitle(varSelect.value)} en ${yearSelect.value}`;
   subTitle.textContent = getTypeLabel(typeSelect.value);
   histTitle.textContent = `Distribution — ${getCurrentConfig().title}`;
 }
@@ -416,36 +419,31 @@ function initMapLayers() {
   mapReady = true;
 }
 
-function inflateGzipToText(arrayBuffer) {
-  const uint8 = new Uint8Array(arrayBuffer);
-  const inflated = pako.ungzip(uint8);
-  return new TextDecoder("utf-8").decode(inflated);
-}
+function updateDashboard() {
+  if (!currentGeojson) return;
 
-async function fetchGeojsonGz(url) {
-  const response = await fetch(url);
+  const features = filterFeatures();
+  updateTitles();
+  updateLegend();
+  updateMap(features);
+  updateHistogram(features);
 
-  if (!response.ok) {
-    throw new Error(`Fichier introuvable : ${url}`);
-  }
-
-  const buffer = await response.arrayBuffer();
-  const text = inflateGzipToText(buffer);
-  return JSON.parse(text);
-}
-
-function setLoadingMessage(message) {
-  statusText.textContent = message;
+  statusText.textContent = `${features.length.toLocaleString("fr-FR")} entités affichées.`;
 }
 
 async function loadYearData(year) {
   try {
-    setLoadingMessage(`Chargement de ${year}…`);
+    statusText.textContent = `Chargement de ${year}…`;
 
     if (yearCache.has(String(year))) {
       currentGeojson = yearCache.get(String(year));
     } else {
-      const geojson = await fetchGeojsonGz(buildYearFilePath(year));
+      const response = await fetch(buildYearFilePath(year));
+      if (!response.ok) {
+        throw new Error(`Fichier introuvable : ${buildYearFilePath(year)}`);
+      }
+
+      const geojson = await response.json();
 
       if (!geojson.features || !Array.isArray(geojson.features)) {
         throw new Error("GeoJSON invalide");
@@ -458,24 +456,12 @@ async function loadYearData(year) {
     initTypeFilter(currentGeojson.features);
     updateDashboard();
 
-    setLoadingMessage(`${filterFeatures().length.toLocaleString("fr-FR")} entités affichées pour ${year}.`);
+    statusText.textContent = `${filterFeatures().length.toLocaleString("fr-FR")} entités affichées pour ${year}.`;
   } catch (error) {
     console.error(error);
-    setLoadingMessage(`Erreur : ${error.message}`);
+    statusText.textContent = `Erreur : ${error.message}`;
     alert(error.message);
   }
-}
-
-function updateDashboard() {
-  if (!currentGeojson) return;
-
-  const features = filterFeatures();
-  updateTitles();
-  updateLegend();
-  updateMap(features);
-  updateHistogram(features);
-
-  statusText.textContent = `${features.length.toLocaleString("fr-FR")} entités affichées.`;
 }
 
 yearSelect.addEventListener("change", () => {
