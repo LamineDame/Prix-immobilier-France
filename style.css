@@ -1,75 +1,240 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <title>DVF France</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+:root {
+  --bg: #ececec;
+  --panel: rgba(255, 255, 255, 0.82);
+  --panel-border: rgba(0, 0, 0, 0.10);
+  --text: #1d1d1d;
+  --muted: #5f5f5f;
+}
 
-  <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet" />
+* {
+  box-sizing: border-box;
+}
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
 
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div id="app-shell">
-    <header id="page-header">
-      <h1 id="mainTitle">Géographie des prix immobiliers en France (2014–2024)</h1>
-      <p id="subTitle">Ventes de tous les biens</p>
-    </header>
+body {
+  overflow: hidden;
+}
 
-    <section id="dashboard">
-      <aside id="leftPanel">
-        <div class="card controls-card">
-          <h2>Filtres</h2>
+#app-shell {
+  width: 100vw;
+  height: 100vh;
+  padding: 8px;
+}
 
-          <label for="yearSelect">Année</label>
-          <select id="yearSelect"></select>
+#page-header {
+  padding: 8px 10px 6px 10px;
+}
 
-          <label for="typeSelect">Type de bien</label>
-          <select id="typeSelect">
-            <option value="Tous">Tous les biens</option>
-          </select>
+#mainTitle {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 56px);
+  line-height: 1.02;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
 
-          <label for="varSelect">Indicateur cartographié</label>
-          <select id="varSelect">
-            <option value="prix_m2_moy">Prix moyen au m²</option>
-            <option value="prix_m2_med">Prix médian au m²</option>
-            <option value="valeur_med">Valeur médiane</option>
-          </select>
-        </div>
+#subTitle {
+  margin: 6px 0 0 28px;
+  font-size: clamp(18px, 1.4vw, 24px);
+  font-weight: 800;
+  color: #444;
+}
 
-        <div class="card legend-card">
-          <h3 id="legendTitle">Prix moyen au m² par commune</h3>
-          <div id="legendItems" class="legend-items"></div>
-          <p id="legendNote" class="legend-note">
-            Agrégation statistique à l’échelle communale.
-          </p>
-        </div>
+#dashboard {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 10px;
+  height: calc(100vh - 110px);
+  padding: 8px 10px 10px 10px;
+}
 
-        <div class="card hist-card">
-          <h3 id="histTitle">Distribution</h3>
-          <div class="hist-wrap">
-            <canvas id="histogramChart"></canvas>
-          </div>
-        </div>
+#leftPanel {
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  gap: 10px;
+  overflow-y: auto;
+}
 
-        <div class="card info-card">
-          <h3>État</h3>
-          <p id="statusText">Initialisation…</p>
-        </div>
-      </aside>
+.card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 14px;
+}
 
-      <main id="mapPanel">
-        <div id="mapFrame">
-          <div id="map"></div>
-        </div>
-      </main>
-    </section>
-  </div>
+.controls-card h2,
+.legend-card h3,
+.hist-card h3,
+.info-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 900;
+}
 
-  <script src="main.js"></script>
-</body>
-</html>
+label {
+  display: block;
+  margin: 12px 0 6px 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #353535;
+}
+
+select {
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #fff;
+  color: #222;
+  padding: 0 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  transform: rotate(45deg);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  flex: 0 0 auto;
+}
+
+.legend-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4b4b4b;
+}
+
+.legend-note,
+#statusText {
+  margin: 12px 0 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #666;
+}
+
+.hist-wrap {
+  height: 220px;
+  position: relative;
+}
+
+#mapPanel {
+  min-width: 0;
+  min-height: 0;
+}
+
+#mapFrame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ddd;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.mapboxgl-ctrl-group {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.mapboxgl-ctrl-scale {
+  background: rgba(255, 255, 255, 0.86) !important;
+  border: 1px solid rgba(0, 0, 0, 0.18) !important;
+  color: #222 !important;
+}
+
+.mapboxgl-popup-content {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.tooltip-title {
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.tooltip-sub {
+  color: #666;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.tooltip-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 2px 0;
+}
+
+.tooltip-line span:first-child {
+  color: #666;
+}
+
+.tooltip-line strong {
+  color: #111;
+}
+
+@media (max-width: 1100px) {
+  body {
+    overflow: auto;
+  }
+
+  #app-shell {
+    height: auto;
+  }
+
+  #dashboard {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  #mapFrame {
+    height: 70vh;
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 760px) {
+  #subTitle {
+    margin-left: 0;
+  }
+
+  #page-header {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  #dashboard {
+    padding: 8px;
+  }
+}
