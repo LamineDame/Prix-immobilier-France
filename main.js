@@ -4,7 +4,7 @@ const map = new mapboxgl.Map({
   container: "map",
   style: "mapbox://styles/mapbox/light-v11",
   center: [2.4, 46.4],
-  zoom: 5.5,
+  zoom: 5.2,
   attributionControl: true,
   customAttribution: "Cartographie : Mouhamadou Lamine GUEYE · Données DVF",
   antialias: false,
